@@ -13,7 +13,7 @@ metadata:
 
 # 工时登记
 
-登记入口是 **工时管理系统**，不是 TAPD。Cursor / Codex / Hermes 共用本技能。Codex 可点名 `$fans-daily-register`；Hermes 可 `/fans-daily-register`。
+登记入口是 **工时管理系统**，不是 TAPD。技能装在 `$HOME/.agents/skills/fans-daily-register`，Cursor / Codex / Hermes 或其它会读该目录的 Agent 都能用。Codex 可点名 `$fans-daily-register`；Hermes 可 `/fans-daily-register`。没有这三家时，按本 `SKILL.md` 直接执行即可。
 
 禁止用 `tapd_timesheets_create` / `list` / `count` 代替本流程。
 
