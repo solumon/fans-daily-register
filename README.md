@@ -9,13 +9,17 @@
 | 路径 | 说明 |
 |------|------|
 | `SKILL.md` | 技能正文（安装后给 Agent 读） |
-| `scripts/timesheet.sh` | 登录 / 拉当日卡片 / 提交 / 查询 |
-| `scripts/install.sh` | 装到 `~/.agents/skills`；有 Cursor / Codex / Hermes 再软链 |
+| `scripts/timesheet.sh` | macOS / Linux / WSL / Git Bash：登录 / 拉当日卡片 / 提交 |
+| `scripts/timesheet.ps1` | Windows PowerShell：同上 |
+| `scripts/install.sh` | Unix 安装：装到 `~/.agents/skills`；有 Cursor / Codex / Hermes 再软链 |
+| `scripts/install.ps1` | Windows 安装：同上（目录联接，不依赖 rsync） |
 | `agents/openai.yaml` | Codex 界面名与自动选用 |
 
 ## 别人怎么用
 
-推荐把仓库地址直接发给 **能在本机执行命令的 AI**（Cursor、Codex、Hermes、Claude Code 等均可），让它安装。没有 Cursor / Codex / Hermes 也没关系：技能会落到通用目录 `~/.agents/skills`，当前这个 Agent 按 `SKILL.md` 执行即可。网页版聊天框不能跑 git/bash，装不了。
+推荐把仓库地址直接发给 **能在本机执行命令的 AI**（Cursor、Codex、Hermes、Claude Code 等均可），让它安装。没有 Cursor / Codex / Hermes 也没关系：技能会落到通用目录 `~/.agents/skills`，当前这个 Agent 按 `SKILL.md` 执行即可。网页版聊天框不能跑命令，装不了。
+
+Windows 用 PowerShell 脚本（`install.ps1` / `timesheet.ps1`，依赖本机 `curl.exe`）；macOS / Linux / WSL / Git Bash 用 `.sh`。
 
 把下面整段复制给 AI：
 
@@ -24,12 +28,14 @@
 
 这是工时管理系统登记技能：查询名下任务、按任务填工时并提交。不要用 TAPD 工时接口。登录是工作邮箱、无密码。
 
-请克隆该仓库，在仓库根目录执行 ./scripts/install.sh（克隆到哪都可以）。安装会把技能放到 ~/.agents/skills/fans-daily-register；本机若有 Cursor / Codex / Hermes 再软链过去，没有就跳过。装完告诉我可以开始用。
+请克隆该仓库。macOS/Linux/WSL 在仓库根目录执行 ./scripts/install.sh；Windows PowerShell 执行 powershell -NoProfile -File scripts/install.ps1（克隆到哪都可以）。安装会把技能放到 ~/.agents/skills/fans-daily-register；本机若有 Cursor / Codex / Hermes 再链过去，没有就跳过。装完告诉我可以开始用。
 ```
 
-收到这段的 Agent 应自己执行 `./scripts/install.sh`，不要只把命令丢回给用户。
+收到这段的 Agent 应自己执行对应的 install 脚本，不要只把命令丢回给用户。
 
 ### 手动安装
+
+macOS / Linux / WSL / Git Bash：
 
 ```bash
 git clone https://github.com/solumon/fans-daily-register.git
@@ -37,12 +43,20 @@ cd fans-daily-register
 ./scripts/install.sh
 ```
 
+Windows PowerShell：
+
+```powershell
+git clone https://github.com/solumon/fans-daily-register.git
+cd fans-daily-register
+powershell -NoProfile -File scripts/install.ps1
+```
+
 安装后：
 
 - 技能（必有）→ `$HOME/.agents/skills/fans-daily-register`
 - 软链（本机有对应软件才装）→ Cursor / Codex / Hermes 的 skills 目录
 
-依赖：`bash`、`curl`、`rsync`、`python3`。改完 `SKILL.md` 或脚本后重新执行 `./scripts/install.sh`。
+依赖：Unix 要 `bash`、`curl`、`rsync`、`python3`；Windows 要 PowerShell 5.1+、`curl.exe`（Win10 自带）。改完 `SKILL.md` 或脚本后重新执行对应的 install 脚本。
 
 当前默认环境：
 

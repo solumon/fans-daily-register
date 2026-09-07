@@ -4,7 +4,7 @@ description: >-
   在工时管理系统查询名下任务、登记当日工时（按任务填工时/进度/工作内容并提交）。
   Use when the user asks to 登记工时、填工时、报工时、写日报、拉任务、有哪些任务、工时报表、timesheet,
   or mentions timesheet.up366demo.cn.
-platforms: [macos, linux]
+platforms: [macos, linux, windows]
 metadata:
   hermes:
     tags: [timesheet, 工时, 日报]
@@ -17,7 +17,7 @@ metadata:
 
 禁止用 `tapd_timesheets_create` / `list` / `count` 代替本流程。
 
-本技能目录 = 含本 `SKILL.md` 的文件夹（安装后通常是 `$HOME/.agents/skills/fans-daily-register`）。
+本技能目录 = 含本 `SKILL.md` 的文件夹（安装后通常是 `$HOME/.agents/skills/fans-daily-register`）。Windows 上 `$HOME` 即用户目录，如 `C:\Users\你`。
 
 ## 账号与地址
 
@@ -30,23 +30,26 @@ metadata:
 | Header | `Content-Type: application/json`、`X-App-Name: timesheet-html` |
 | 登录 | 工作邮箱，无密码。`userName` 即邮箱 |
 | 本机邮箱 | `$HOME/.config/fans-daily-register/email`（不进仓库） |
+| Cookie | macOS/Linux：`/tmp/fans-timesheet-cookies.txt`；Windows：`%TEMP%\fans-timesheet-cookies.txt` |
 
 环境由页面域名决定：`up366demo.cn` → API 也是 `*.up366demo.cn`。身份以 `me` 为准，不要写死姓名 / userId。
 
 ### 第一次使用（邮箱）
 
-拉任务或登记前先确保已有本机邮箱：
+拉任务或登记前先确保已有本机邮箱。**有 bash 用 `.sh`，Windows PowerShell 用 `.ps1`。**
 
 ```bash
+# macOS / Linux / WSL / Git Bash
 "$HOME/.agents/skills/fans-daily-register/scripts/timesheet.sh" email
 ```
 
-- 打印出邮箱 → 直接 `login`（无参数，用已存邮箱）
-- 退出码 3 / `NO_EMAIL` → **停下来问用户工作邮箱**，不要猜。用户给出后：
-
-```bash
-"$HOME/.agents/skills/fans-daily-register/scripts/timesheet.sh" login 'you@up366.com'
+```powershell
+# Windows PowerShell
+powershell -NoProfile -File "$HOME/.agents/skills/fans-daily-register/scripts/timesheet.ps1" email
 ```
+
+- 打印出邮箱 → 直接 `login`（无参数，用已存邮箱）
+- 退出码 3 / `NO_EMAIL` → **停下来问用户工作邮箱**，不要猜。用户给出后对对应脚本再跑 `login 'you@up366.com'`。
 
 登录成功会写入本机配置，以后同一台机器不用再问。用户要换账号时再 `login` 一次新邮箱即可覆盖。
 
@@ -56,11 +59,10 @@ metadata:
 
 用本技能脚本调 API（cookie jar）。不要为了查询/登记去 Chrome 里点表单。用户明确说「你去看页面」时除外。不要依赖 `AskQuestion`、TAPD MCP。
 
-Cookie：`/tmp/fans-timesheet-cookies.txt`
-
-脚本：[scripts/timesheet.sh](scripts/timesheet.sh)
+Cookie：见上表。脚本：[scripts/timesheet.sh](scripts/timesheet.sh) / [scripts/timesheet.ps1](scripts/timesheet.ps1)
 
 ```bash
+# macOS / Linux / WSL / Git Bash
 "$HOME/.agents/skills/fans-daily-register/scripts/timesheet.sh" email
 "$HOME/.agents/skills/fans-daily-register/scripts/timesheet.sh" login
 "$HOME/.agents/skills/fans-daily-register/scripts/timesheet.sh" me
@@ -69,7 +71,12 @@ Cookie：`/tmp/fans-timesheet-cookies.txt`
 "$HOME/.agents/skills/fans-daily-register/scripts/timesheet.sh" submit '<json>'
 ```
 
-若技能目录不在上述路径，用本 `SKILL.md` 旁的 `scripts/timesheet.sh`。
+```powershell
+# Windows PowerShell（参数相同）
+powershell -NoProfile -File "$HOME/.agents/skills/fans-daily-register/scripts/timesheet.ps1" email
+```
+
+若技能目录不在上述路径，用本 `SKILL.md` 旁的 `scripts/timesheet.sh` 或 `scripts/timesheet.ps1`。
 
 `login` 不传参数则用本机已存邮箱。`daily` 默认当天。响应 `code === 0` 才算成功；业务数据在 `data`。
 

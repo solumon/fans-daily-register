@@ -22,6 +22,7 @@ rsync -a --delete \
   --exclude '.cursor/' \
   --exclude 'README.md' \
   --exclude 'scripts/install.sh' \
+  --exclude 'scripts/install.ps1' \
   --exclude '.DS_Store' \
   "${ROOT}/" "${DEST}/"
 chmod +x "${DEST}/scripts/timesheet.sh"
