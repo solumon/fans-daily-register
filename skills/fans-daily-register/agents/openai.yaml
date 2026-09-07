@@ -1,0 +1,7 @@
+interface:
+  display_name: "工时登记"
+  short_description: "Query assigned tasks and submit daily timesheets"
+  default_prompt: "Use $fans-daily-register to list my tasks or register hours."
+
+policy:
+  allow_implicit_invocation: true
