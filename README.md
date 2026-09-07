@@ -15,10 +15,24 @@
 
 ## 别人怎么用
 
-### 1. 安装
+推荐把仓库地址直接发给 AI，让它安装，不必自己敲命令。
+
+把下面整段复制到 Cursor / Codex / Hermes：
+
+```
+请安装这个技能：https://github.com/solumon/fans-daily-register
+
+这是工时管理系统登记技能（Cursor / Codex / Hermes 共用）：查询名下任务、按任务填工时并提交。不要用 TAPD 工时接口。登录是工作邮箱、无密码。
+
+请克隆该仓库，在仓库根目录执行 ./scripts/install.sh（克隆到哪都可以）。安装会把技能放到 ~/.agents/skills/fans-daily-register，并软链到 Cursor、Codex、Hermes。装完告诉我可以开始用。
+```
+
+收到这段的 Agent 应按上述执行 `./scripts/install.sh`，不要只把命令丢回给用户。
+
+### 手动安装
 
 ```bash
-git clone <本仓库地址>
+git clone https://github.com/solumon/fans-daily-register.git
 cd fans-daily-register
 ./scripts/install.sh
 ```
@@ -39,7 +53,7 @@ cd fans-daily-register
 
 生产若是 `up366.com.cn`，改 `scripts/timesheet.sh` 里的 `TIMESHEET_API` 后重新安装。
 
-### 2. 第一次用：报邮箱
+### 第一次用：报邮箱
 
 安装后不必改技能正文。在 Cursor / Codex / Hermes 里说「拉任务」或「登记工时」时，Agent 发现本机还没有邮箱，会问你的 **工作邮箱**，登录成功后写入：
 
@@ -47,7 +61,7 @@ cd fans-daily-register
 
 同一台电脑以后不用再问。换账号再说一次新邮箱即可。这份文件不进仓库。
 
-### 3. 在 Cursor / Codex / Hermes 里用
+### 在 Cursor / Codex / Hermes 里用
 
 任意项目、任意会话即可，不必打开本仓库。
 
