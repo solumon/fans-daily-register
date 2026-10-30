@@ -12,7 +12,7 @@ metadata:
 
 # 工时登记
 
-登记入口是 **工时管理系统**，不是 TAPD。技能装在 `$HOME/.agents/skills/fans-daily-register`，Cursor / Codex / Hermes 或其它会读该目录的 Agent 都能用。Codex 可点名 `$fans-daily-register`；Hermes 可 `/fans-daily-register`。没有这三家时，按本 `SKILL.md` 直接执行即可。
+登记入口是 **工时管理系统**，不是 TAPD。技能装在 `$HOME/.agents/skills/fans-daily-register`，Cursor / Codex / Hermes / OpenCode 或其它会读该目录的 Agent 都能用。Codex 可点名 `$fans-daily-register`；Hermes 可 `/fans-daily-register`；OpenCode 可直接说「使用 fans-daily-register 拉任务」，v2 还可用 `@fans-daily-register`。OpenCode 直接发现通用目录中的技能，无需额外软链或插件。
 
 禁止用 `tapd_timesheets_create` / `list` / `count` 代替本流程。
 
@@ -56,7 +56,7 @@ powershell -NoProfile -File "$HOME/.agents/skills/fans-daily-register/scripts/ti
 
 ## 不要用浏览器点页面
 
-用本技能脚本调 API（cookie jar）。不要为了查询/登记去 Chrome 里点表单。用户明确说「你去看页面」时除外。不要依赖 `AskQuestion`、TAPD MCP。
+用本技能脚本调 API（cookie jar）。不要为了查询/登记去 Chrome 里点表单。用户明确说「你去看页面」时除外。需要澄清时用宿主可用的问答工具或聊天正文，不依赖特定工具名（如 `AskQuestion`、`clarify`）；不要依赖 TAPD MCP。
 
 Cookie：见上表。脚本：[scripts/timesheet.sh](scripts/timesheet.sh) / [scripts/timesheet.ps1](scripts/timesheet.ps1)
 
@@ -128,8 +128,8 @@ powershell -NoProfile -File "$HOME/.agents/skills/fans-daily-register/scripts/ti
 
 ## 展示格式
 
-- Codex、ChatGPT 等支持 Markdown 的聊天界面：任务清单、提交确认卡、提交后汇总使用 Markdown 表格，所有列用 `:---` 显式左对齐。表格前留一空行，不放进代码块，不用空格模拟列对齐。
-- 仅在不渲染 Markdown 的终端/CLI 中使用空格对齐的纯文本列。
+- Codex、ChatGPT、OpenCode 等支持 Markdown 的聊天界面：任务清单、提交确认卡、提交后汇总使用 Markdown 表格，所有列用 `:---` 显式左对齐。表格前留一空行，不放进代码块，不用空格模拟列对齐。
+- 仅在不渲染 Markdown 的终端/CLI 中使用空格对齐的纯文本列。按实际界面的渲染能力选择，不因 OpenCode 运行在终端中就默认使用纯文本。
 - 任务清单固定四列：任务ID、任务名、区间、最近一次填法。确认卡和汇总按对应流程保留全部必要字段。
 
 ## 登记工时
@@ -154,7 +154,7 @@ powershell -NoProfile -File "$HOME/.agents/skills/fans-daily-register/scripts/ti
 - [ ] 4. 等用户回复任务/工时/进度/内容 → 出确认卡 → 等「提交」
 ```
 
-多行清单**不要放进 `clarify` 的 question**：换行会被吞成一行，用户看不懂也不便挑选。`clarify` 只用于一句话的单选/是非；卡片清单、确认卡一律写在聊天正文里。用户抱怨「怎么不换行」或对齐问题时，按「展示格式」在正文重列，不要解释工具限制。
+多行清单**不要放进问答工具的 question**：部分宿主会吞掉换行，用户看不懂也不便挑选。问答工具只用于一句话的单选/是非；卡片清单、确认卡一律写在聊天正文里。用户抱怨「怎么不换行」或对齐问题时，按「展示格式」在正文重列，不要解释工具限制。
 
 终端/CLI 里 Markdown 不渲染时，清单和确认卡用空格对齐的纯文本列（任务名列宽留够）；此规则不适用于支持 Markdown 的聊天界面。
 
@@ -168,7 +168,7 @@ powershell -NoProfile -File "$HOME/.agents/skills/fans-daily-register/scripts/ti
 
 「最近一次填法」= 该任务最近一次登记的 `日期 工时 进度 内容`，取 `range` 近 5–10 天；内容过长可截断，无记录写「无近期记录」。
 
-用户口头报的日期不可靠（例如说「18 日的」实际指 10-28）。补登记漏登日时，回复和确认卡里一律写全 `YYYY-MM-DD 周几`；日期对不上近期缺登日、或落在非工作日时，先用 `clarify` 单问一句确认是哪个日期，再拉卡片、再出确认卡。
+用户口头报的日期不可靠（例如说「18 日的」实际指 10-28）。补登记漏登日时，回复和确认卡里一律写全 `YYYY-MM-DD 周几`；日期对不上近期缺登日、或落在非工作日时，先向用户单问一句确认是哪个日期，再拉卡片、再出确认卡。
 
 提交 body：
 

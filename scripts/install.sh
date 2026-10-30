@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Install fans-daily-register into ~/.agents/skills (Agent Skills 通用目录).
-# 本机有 Cursor / Codex / Hermes 时再软链过去；没有就跳过。
+# OpenCode 原生读取通用目录，无需软链；本机有 Cursor / Codex / Hermes 时再软链过去。
 #
 # 远程（不克隆）：curl -fsSL https://raw.githubusercontent.com/solumon/fans-daily-register/master/scripts/install.sh | bash
 # 本地（开发者）：./scripts/install.sh
@@ -127,4 +127,4 @@ test -x "${DEST}/scripts/timesheet.sh"
 test ! -e "${DEST}/scripts/install.sh"
 echo "Install complete."
 echo "Skill: ${DEST}/SKILL.md"
-echo "任何会读 ~/.agents/skills 的 Agent 都能用；没有 Cursor/Codex/Hermes 也不影响。"
+echo "OpenCode 直接读取 ~/.agents/skills，无需额外软链或插件；其他会读该目录的 Agent 也能用。"

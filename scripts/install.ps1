@@ -1,5 +1,5 @@
 #requires -Version 5.1
-# Install into ~/.agents/skills. Link Cursor / Codex / Hermes only if present.
+# Install into ~/.agents/skills. OpenCode reads it directly; link Cursor / Codex / Hermes only if present.
 #
 # Remote (no clone): irm https://raw.githubusercontent.com/solumon/fans-daily-register/master/scripts/install.ps1 | iex
 # Local (dev):       powershell -NoProfile -File scripts/install.ps1
@@ -130,7 +130,7 @@ try {
 
     Write-Host "Install complete."
     Write-Host "Skill: $Dest\SKILL.md"
-    Write-Host "任何会读 ~/.agents/skills 的 Agent 都能用；没有 Cursor/Codex/Hermes 也不影响。"
+    Write-Host "OpenCode 直接读取 ~/.agents/skills，无需额外软链或插件；其他会读该目录的 Agent 也能用。"
 }
 finally {
     if ($FetchTmp -and (Test-Path $FetchTmp)) {

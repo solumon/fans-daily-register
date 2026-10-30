@@ -1,6 +1,6 @@
 # fans-daily-register
 
-工时管理系统登记技能：查名下任务、按任务填工时并提交。Cursor / Codex / Hermes 以及其它会读 `~/.agents/skills` 的 Agent 都能用。
+工时管理系统登记技能：查名下任务、按任务填工时并提交。Cursor / Codex / Hermes / OpenCode 以及其它会读 `~/.agents/skills` 的 Agent 都能用。
 
 不要用 TAPD 工时接口。登录是工作邮箱、无密码。
 
@@ -17,7 +17,7 @@
 
 ## 别人怎么用
 
-推荐把仓库地址直接发给 **能在本机执行命令的 AI**（Cursor、Codex、Hermes、Claude Code 等均可），让它安装。没有 Cursor / Codex / Hermes 也没关系：技能会落到通用目录 `~/.agents/skills`，当前这个 Agent 按 `SKILL.md` 执行即可。网页版聊天框不能跑命令，装不了。
+推荐把仓库地址直接发给 **能在本机执行命令的 AI**（Cursor、Codex、Hermes、OpenCode、Claude Code 等均可），让它安装。技能会落到通用目录 `~/.agents/skills`，OpenCode 可原生发现，其他 Agent 也可按 `SKILL.md` 执行。网页版聊天框不能跑命令，装不了。
 
 Windows 用 PowerShell 脚本（`install.ps1` / `timesheet.ps1`，依赖本机 `curl.exe`）；macOS / Linux / WSL / Git Bash 用 `.sh`。
 
@@ -34,7 +34,7 @@ curl -fsSL https://raw.githubusercontent.com/solumon/fans-daily-register/master/
 Windows PowerShell 执行：
 irm https://raw.githubusercontent.com/solumon/fans-daily-register/master/scripts/install.ps1 | iex
 
-安装会把技能拷到 ~/.agents/skills/fans-daily-register；本机若有 Cursor / Codex / Hermes 再链过去，没有就跳过。装完告诉我可以开始用。
+安装会把技能拷到 ~/.agents/skills/fans-daily-register；OpenCode 直接读取这个目录，无需额外软链或插件；本机若有 Cursor / Codex / Hermes 再链过去，没有就跳过。装完告诉我可以开始用。
 ```
 
 收到这段的 Agent 应自己执行对应的远程安装命令，不要克隆，也不要把命令丢回给用户。
@@ -60,6 +60,7 @@ irm https://raw.githubusercontent.com/solumon/fans-daily-register/master/scripts
 安装后：
 
 - 技能（必有）→ `$HOME/.agents/skills/fans-daily-register`
+- OpenCode → 直接读取上面的通用目录，不创建重复副本或软链
 - 软链（本机有对应软件才装）→ Cursor / Codex / Hermes 的 skills 目录
 
 依赖：Unix 要 `bash`、`curl`、`tar`、`rsync`、`python3`；Windows 要 PowerShell 5.1+、`curl.exe`（Win10 自带）。远程安装不需要 git。改完 `SKILL.md` 或脚本后重新执行对应的 install 脚本。
@@ -81,7 +82,7 @@ irm https://raw.githubusercontent.com/solumon/fans-daily-register/master/scripts
 
 ### 日常怎么用
 
-装好后任意会话即可，不必打开本仓库。当前这个 Agent 读到技能就会用；Cursor / Codex / Hermes 只是常见宿主，不是前提。
+装好后任意会话即可，不必打开本仓库。当前这个 Agent 读到技能就会用；Cursor / Codex / Hermes / OpenCode 只是常见宿主，不是前提。
 
 | 你想做 | 怎么说 |
 |--------|--------|
@@ -90,9 +91,24 @@ irm https://raw.githubusercontent.com/solumon/fans-daily-register/master/scripts
 | 改已交工时 | 「某某任务工时改为 x」 |
 | Codex 点名 | `$fans-daily-register` |
 | Hermes 点名 | `/fans-daily-register` |
+| OpenCode 点名 | 「使用 fans-daily-register 拉任务」；v2 可用 `@fans-daily-register` |
 
 工时必须是 **0.5 的倍数**（0.5、1、1.5…）。提交前 Agent 会列出拟提交内容；未确认不会交。登记完成后会给出姓名、邮箱、当天任务、工时、内容与合计。
 
 开发账号看不到任务后台（`/front/task/page` 会 403），任务列表来自当日 `daily` 卡片。
+
+### OpenCode
+
+执行上面的通用安装命令即可。OpenCode 原生发现 `~/.agents/skills/fans-daily-register/SKILL.md`，脚本也放在同一技能目录；无需安装额外插件、修改全局配置或创建 `~/.config/opencode/skills` 软链。macOS/Linux 和 Windows 使用各自的同一套安装脚本。
+
+在 OpenCode 中说「使用 fans-daily-register 拉任务」或「登记工时」即可。v2 可显式输入：
+
+```text
+@fans-daily-register 拉任务
+```
+
+安装或更新后若当前会话未发现技能，先退出并重新启动 OpenCode。还不显示时，检查 `~/.agents/skills/fans-daily-register/SKILL.md` 是否存在、当前 agent 是否允许加载该技能，以及项目或 OpenCode 专用目录中是否有覆盖它的同名技能。不要为解决发现问题自动放宽权限。
+
+参考：[OpenCode v2 技能文档](https://opencode.ai/v2/docs/skills)、[OpenCode v1 技能文档](https://opencode.ai/docs/skills/)。
 
 Hermes 装完后若当前会话还看不到技能，新开一轮对话，或执行技能重载（若你用的 Hermes 版本提供 `hermes` 技能刷新命令）。
