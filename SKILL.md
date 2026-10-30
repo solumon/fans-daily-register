@@ -79,6 +79,8 @@ powershell -NoProfile -File "$HOME/.agents/skills/fans-daily-register/scripts/ti
 
 `login` 不传参数则用本机已存邮箱。`daily` 默认当天。响应 `code === 0` 才算成功；业务数据在 `data`。
 
+脚本没有内建重试：任何命令（`login` / `daily` / `range` / `submit`）都偶发 `curl: (56) Recv failure: Connection reset by peer`，与 dimension、请求大小无关。在调用侧加重试循环（重试 2–5 次、间隔 2 秒）即可成功，`submit` 也一样——重试前先 `daily` 回查是否已落库，避免重复提交。`ping timesheet-manage.up366demo.cn` 通就说明不是网络问题；不要据此判定服务不可用，更不要转去浏览器点页面。重试全部失败时才向用户报告。
+
 开发身份下 `POST /front/task/page` 会 **403**，不要用它列任务。
 
 ## 拉任务
@@ -129,10 +131,39 @@ powershell -NoProfile -File "$HOME/.agents/skills/fans-daily-register/scripts/ti
 ```
 - [ ] 1. 确认日期（默认当天）
 - [ ] 2. 按「第一次使用」确保邮箱 → login → daily 拉当天卡片
-- [ ] 3. 按用户说明填 hours / progress / content（只改他说的任务）
-- [ ] 4. 提交前把拟提交内容给用户看清；未确认不 submit
-- [ ] 5. submit 成功后按「提交后汇总」输出，不要只说「提交成功」
+- [ ] 3. 用户没说填什么时，按下方「用户只说『登记工时』时」在聊天里列卡片并问，不要自己编工时/内容，也不要默认按惯例套用
+- [ ] 4. 按用户说明填 hours / progress / content（只改他说的任务；他没说的项沿用 `daily` 原值）
+- [ ] 5. 提交前把拟提交内容给用户看清；用户后补或改动任何一项（例如看过确认卡才说「进度 100%」）就重出确认卡，未明确说「提交」前不 submit
+- [ ] 6. submit 成功后按「提交后汇总」输出，不要只说「提交成功」
 ```
+
+### 用户只说「登记工时」时
+
+`daily` 只给任务卡片，没有工时/进度/内容；这三项必须由用户给，猜不得。补齐信息的方式：
+
+```
+- [ ] 1. daily 拉当天卡片；再 range 近 5–10 天，拿到每张卡最近一次的 progress / content 作为参考值
+- [ ] 2. 在聊天正文里用纯文本列卡片，固定四列、空格对齐（不要 `|` 表格）：**任务ID | 任务名 | 区间 | 最近一次填法**，列头写「任务ID」不写 `taskId`
+- [ ] 3. 正文附 1–2 行「近几天怎么填的」参考，和一行填写示范
+- [ ] 4. 等用户回复任务/工时/进度/内容 → 出确认卡 → 等「提交」
+```
+
+多行清单**不要放进 `clarify` 的 question**：换行会被吞成一行，用户看不懂也不便挑选。`clarify` 只用于一句话的单选/是非；卡片清单、确认卡一律写在聊天正文里。用户抱怨「怎么不换行」时，改成正文纯文本重列一遍，不要解释工具限制。
+
+终端/CLI 里 markdown 不渲染，清单和确认卡用空格对齐的纯文本列（任务名列宽留够），不要用 `|` 表格。
+
+卡片清单固定列法（列头「任务ID」，列序固定为 任务ID / 任务名 / 区间 / 最近一次填法）：
+
+```
+任务ID  任务名                          区间              最近一次填法
+187     【业务1-1】听说报告v1.5        10-29 ~ 11-05    10-30  4h  60%  PartB 多答案相关需求开发
+153     【业务1-1】OSS路径处理          10-19 ~ 10-30    10-20  6h  100%  完成并提测
+14      【长期任务】例会、面试          09-01 ~ 2029-12-31  无近期记录
+```
+
+「最近一次填法」= 该任务最近一次登记的 `日期 工时 进度 内容`，取 `range` 近 5–10 天；内容过长可截断，无记录写「无近期记录」。
+
+用户口头报的日期不可靠（例如说「18 日的」实际指 10-28）。补登记漏登日时，回复和确认卡里一律写全 `YYYY-MM-DD 周几`；日期对不上近期缺登日、或落在非工作日时，先用 `clarify` 单问一句确认是哪个日期，再拉卡片、再出确认卡。
 
 提交 body：
 
@@ -145,9 +176,13 @@ powershell -NoProfile -File "$HOME/.agents/skills/fans-daily-register/scripts/ti
 }
 ```
 
-只提交有改动或已提交过的卡片。`hours`/`progress` 缺省按 0；空 `content` 可省略。
+只提交有改动或已提交过的卡片。空 `content` 可省略。
 
-用户没给某任务的工时/内容时，保留 `daily` 里已有值，不要编造。
+用户没给某项时，一律沿用 `daily` 里已有值，不要编造——工时和内容如此，**进度尤其如此**：`progress` 不传会按 0 落库，重交一张本来有进度的卡片会把进度打回 0。
+
+用户用任务名片段指代任务（例如只说「安徽机房听力模考」）时，按 `taskName` 包含关系在当天 `daily` 卡片里匹配取 `taskId`；命中多张就列出来让他选，不要默认取第一张，也不要把你列的序号当 `taskId`。
+
+进度一律传整数：用户说「100%」就传 `100`，不要传 `1`、`100.0` 或 `"100%"`。
 
 校验（提交前本地做）：
 
@@ -160,9 +195,18 @@ powershell -NoProfile -File "$HOME/.agents/skills/fans-daily-register/scripts/ti
 
 ## 提交后汇总
 
-`submit` 返回 `code === 0` 后，用返回的 `data`（必要时再 `daily` 核对）给用户一份当天汇总。**每次登记/改工时完成都要出**，不要只回「提交成功」。
+`submit` 返回 `code === 0` 后，再跑一次 `daily` 回查目标卡片，确认 `submitted: true` 且 `hours`/`progress`/`content` 与提交值一致，再给用户当天汇总。**每次登记/改工时完成都要出**，不要只回「提交成功」。
 
-按下面结构写（表格即可）：
+回查只打印已提交卡片，避免整份 JSON 灌进上下文：
+
+```bash
+S="$HOME/.agents/skills/fans-daily-register/scripts/timesheet.sh"
+"$S" daily | python3 -c 'import json,sys; d=json.load(sys.stdin)["data"]; print("workDate",d["workDate"],"total",d["totalHours"]); [print(c["taskId"],c["taskName"],"|",c["hours"],"|",c["progress"],"|",c["content"],"|",c["submitted"],c["submittedTime"]) for c in d["cards"] if c["submitted"]]'
+```
+
+本机脚本路径以实际技能目录为准（安装后通常是 `$HOME/.agents/skills/fans-daily-register/scripts/timesheet.sh`，Hermes 下也可能在 `$HOME/.hermes/skills/*/fans-daily-register`）；找不到就 `ls -d $HOME/.agents/skills/fans-daily-register $HOME/.hermes/skills/*/fans-daily-register` 定位，不要改用浏览器。
+
+按下面结构写（能渲染 markdown 的端用表格；终端/CLI 用空格对齐的纯文本，不要留 `|`）：
 
 1. 一行标题：`{workDate} 已登记`
 2. 姓名、邮箱：来自本次 `me` 的 `realName`、`userName`（没有刚调过就补一次 `me`）。不要用仓库里的示例名，不要猜。
